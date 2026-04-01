@@ -1,0 +1,32 @@
+services:
+  - type: web
+    name: pulsegurgaon
+    runtime: node
+    buildCommand: bash render-build.sh
+    startCommand: node artifacts/api-server/dist/index.mjs
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: DATABASE_URL
+        fromDatabase:
+          name: pulsegurgaon-db
+          property: connectionString
+      - key: OPENROUTER_API_KEY
+        sync: false
+      - key: OPENROUTER_API_KEY_2
+        sync: false
+      - key: OPENROUTER_API_KEY_3
+        sync: false
+      - key: OPENROUTER_API_KEY_4
+        sync: false
+      - key: OPENROUTER_API_KEY_5
+        sync: false
+      - key: OPENROUTER_API_KEY_6
+        sync: false
+      - key: SESSION_SECRET
+        generateValue: true
+
+databases:
+  - name: pulsegurgaon-db
+    databaseName: pulsegurgaon
+    plan: free

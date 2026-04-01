@@ -1,0 +1,862 @@
+openapi: 3.1.0
+info:
+  title: Api
+  version: 0.1.0
+  description: PulseGurgaon News Platform API
+servers:
+  - url: /api
+    description: Base API path
+tags:
+  - name: health
+    description: Health operations
+  - name: news
+    description: News article operations
+  - name: blogs
+    description: Blog operations
+  - name: admin
+    description: Admin operations
+  - name: search
+    description: Search operations
+  - name: settings
+    description: Platform settings
+paths:
+  /healthz:
+    get:
+      operationId: healthCheck
+      tags: [health]
+      summary: Health check
+      responses:
+        "200":
+          description: Healthy
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/HealthStatus"
+
+  /news:
+    get:
+      operationId: listNews
+      tags: [news]
+      summary: List news articles
+      parameters:
+        - name: category
+          in: query
+          schema:
+            type: string
+        - name: page
+          in: query
+          schema:
+            type: number
+        - name: limit
+          in: query
+          schema:
+            type: number
+      responses:
+        "200":
+          description: News articles list
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/NewsListResponse"
+
+  /news/featured:
+    get:
+      operationId: getFeaturedNews
+      tags: [news]
+      summary: Get featured/top news articles
+      responses:
+        "200":
+          description: Featured news articles
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/NewsListResponse"
+
+  /news/stats:
+    get:
+      operationId: getNewsStats
+      tags: [news]
+      summary: Get news platform statistics
+      responses:
+        "200":
+          description: Platform stats
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/NewsStats"
+
+  /news/categories:
+    get:
+      operationId: getNewsCategories
+      tags: [news]
+      summary: Get available news categories with counts
+      responses:
+        "200":
+          description: Categories with counts
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CategoriesResponse"
+
+  /news/{id}:
+    get:
+      operationId: getNewsById
+      tags: [news]
+      summary: Get a single news article by ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: number
+      responses:
+        "200":
+          description: News article detail
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/NewsArticle"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /news/refresh:
+    post:
+      operationId: refreshNews
+      tags: [news]
+      summary: Manually trigger news fetch and AI enhancement
+      responses:
+        "200":
+          description: Refresh triggered
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RefreshResponse"
+
+  /search:
+    get:
+      operationId: searchNews
+      tags: [search]
+      summary: Search news by keyword and/or date range
+      parameters:
+        - name: q
+          in: query
+          schema:
+            type: string
+        - name: from
+          in: query
+          schema:
+            type: string
+        - name: to
+          in: query
+          schema:
+            type: string
+        - name: category
+          in: query
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Search results
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SearchResponse"
+
+  /search/ai:
+    post:
+      operationId: aiSearch
+      tags: [search]
+      summary: AI-powered smart search with natural language queries
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AiSearchBody"
+      responses:
+        "200":
+          description: AI search results
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AiSearchResponse"
+
+  /blogs:
+    get:
+      operationId: listBlogs
+      tags: [blogs]
+      summary: List all blogs
+      parameters:
+        - name: category
+          in: query
+          schema:
+            type: string
+        - name: page
+          in: query
+          schema:
+            type: number
+        - name: limit
+          in: query
+          schema:
+            type: number
+      responses:
+        "200":
+          description: Blog list
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BlogListResponse"
+    post:
+      operationId: createBlog
+      tags: [blogs]
+      summary: Create a new blog post
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateBlogBody"
+      responses:
+        "201":
+          description: Created blog
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Blog"
+
+  /blogs/{id}:
+    get:
+      operationId: getBlogById
+      tags: [blogs]
+      summary: Get a single blog post
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: number
+      responses:
+        "200":
+          description: Blog detail
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Blog"
+        "404":
+          description: Not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+    put:
+      operationId: updateBlog
+      tags: [blogs]
+      summary: Update a blog post
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: number
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateBlogBody"
+      responses:
+        "200":
+          description: Updated blog
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Blog"
+    delete:
+      operationId: deleteBlog
+      tags: [blogs]
+      summary: Delete a blog post
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: number
+      responses:
+        "200":
+          description: Deleted
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessResponse"
+
+  /admin/login:
+    post:
+      operationId: adminLogin
+      tags: [admin]
+      summary: Admin login
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AdminLoginBody"
+      responses:
+        "200":
+          description: Login successful
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AdminLoginResponse"
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+  /admin/articles/{id}:
+    put:
+      operationId: updateArticle
+      tags: [admin]
+      summary: Edit an article
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: number
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateArticleBody"
+      responses:
+        "200":
+          description: Updated article
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/NewsArticle"
+    delete:
+      operationId: deleteArticle
+      tags: [admin]
+      summary: Delete an article
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: number
+      responses:
+        "200":
+          description: Deleted
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessResponse"
+
+  /settings/ticker:
+    get:
+      operationId: getTicker
+      tags: [settings]
+      summary: Get ticker text
+      responses:
+        "200":
+          description: Ticker text
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TickerResponse"
+    put:
+      operationId: updateTicker
+      tags: [settings]
+      summary: Update ticker text
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateTickerBody"
+      responses:
+        "200":
+          description: Updated ticker
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TickerResponse"
+
+  /settings/ads:
+    get:
+      operationId: listAds
+      tags: [settings]
+      summary: Get all ads
+      responses:
+        "200":
+          description: Ads list
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AdsListResponse"
+    post:
+      operationId: createAd
+      tags: [settings]
+      summary: Create an ad
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateAdBody"
+      responses:
+        "201":
+          description: Created ad
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Ad"
+
+  /settings/ads/{id}:
+    put:
+      operationId: updateAd
+      tags: [settings]
+      summary: Update an ad
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: number
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateAdBody"
+      responses:
+        "200":
+          description: Updated ad
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Ad"
+    delete:
+      operationId: deleteAd
+      tags: [settings]
+      summary: Delete an ad
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: number
+      responses:
+        "200":
+          description: Deleted
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/SuccessResponse"
+
+components:
+  schemas:
+    HealthStatus:
+      type: object
+      properties:
+        status:
+          type: string
+      required:
+        - status
+
+    ErrorResponse:
+      type: object
+      properties:
+        error:
+          type: string
+      required:
+        - error
+
+    SuccessResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+      required:
+        - success
+
+    NewsArticle:
+      type: object
+      properties:
+        id:
+          type: number
+        title:
+          type: string
+        description:
+          type: string
+        fullArticle:
+          type: string
+        summaryPoints:
+          type: array
+          items:
+            type: string
+        timeline:
+          type: array
+          items:
+            $ref: "#/components/schemas/TimelineStep"
+        vocabulary:
+          type: array
+          items:
+            $ref: "#/components/schemas/VocabWord"
+        category:
+          type: string
+        image:
+          type: string
+          nullable: true
+        publishedAt:
+          type: string
+        sourceUrl:
+          type: string
+          nullable: true
+        sourceName:
+          type: string
+          nullable: true
+        aiEnhanced:
+          type: boolean
+        createdAt:
+          type: string
+      required:
+        - id
+        - title
+        - description
+        - fullArticle
+        - summaryPoints
+        - timeline
+        - vocabulary
+        - category
+        - publishedAt
+        - aiEnhanced
+        - createdAt
+
+    TimelineStep:
+      type: object
+      properties:
+        step:
+          type: number
+        title:
+          type: string
+        description:
+          type: string
+      required:
+        - step
+        - title
+        - description
+
+    VocabWord:
+      type: object
+      properties:
+        word:
+          type: string
+        meaning:
+          type: string
+      required:
+        - word
+        - meaning
+
+    NewsListResponse:
+      type: object
+      properties:
+        articles:
+          type: array
+          items:
+            $ref: "#/components/schemas/NewsArticle"
+        total:
+          type: number
+        page:
+          type: number
+        limit:
+          type: number
+      required:
+        - articles
+        - total
+        - page
+        - limit
+
+    NewsStats:
+      type: object
+      properties:
+        totalArticles:
+          type: number
+        totalBlogs:
+          type: number
+        categoryCounts:
+          type: object
+          additionalProperties:
+            type: number
+        lastRefreshed:
+          type: string
+          nullable: true
+      required:
+        - totalArticles
+        - totalBlogs
+        - categoryCounts
+
+    CategoriesResponse:
+      type: object
+      properties:
+        categories:
+          type: array
+          items:
+            $ref: "#/components/schemas/CategoryCount"
+      required:
+        - categories
+
+    CategoryCount:
+      type: object
+      properties:
+        name:
+          type: string
+        count:
+          type: number
+      required:
+        - name
+        - count
+
+    RefreshResponse:
+      type: object
+      properties:
+        message:
+          type: string
+        newArticles:
+          type: number
+      required:
+        - message
+        - newArticles
+
+    SearchResponse:
+      type: object
+      properties:
+        articles:
+          type: array
+          items:
+            $ref: "#/components/schemas/NewsArticle"
+        total:
+          type: number
+        query:
+          type: string
+      required:
+        - articles
+        - total
+        - query
+
+    AiSearchBody:
+      type: object
+      properties:
+        query:
+          type: string
+      required:
+        - query
+
+    AiSearchResponse:
+      type: object
+      properties:
+        articles:
+          type: array
+          items:
+            $ref: "#/components/schemas/NewsArticle"
+        suggestedTopics:
+          type: array
+          items:
+            type: string
+        interpretation:
+          type: string
+      required:
+        - articles
+        - suggestedTopics
+        - interpretation
+
+    Blog:
+      type: object
+      properties:
+        id:
+          type: number
+        title:
+          type: string
+        content:
+          type: string
+        image:
+          type: string
+          nullable: true
+        category:
+          type: string
+        excerpt:
+          type: string
+        createdAt:
+          type: string
+        updatedAt:
+          type: string
+      required:
+        - id
+        - title
+        - content
+        - category
+        - excerpt
+        - createdAt
+        - updatedAt
+
+    BlogListResponse:
+      type: object
+      properties:
+        blogs:
+          type: array
+          items:
+            $ref: "#/components/schemas/Blog"
+        total:
+          type: number
+        page:
+          type: number
+        limit:
+          type: number
+      required:
+        - blogs
+        - total
+        - page
+        - limit
+
+    CreateBlogBody:
+      type: object
+      properties:
+        title:
+          type: string
+        content:
+          type: string
+        image:
+          type: string
+          nullable: true
+        category:
+          type: string
+        excerpt:
+          type: string
+      required:
+        - title
+        - content
+        - category
+        - excerpt
+
+    AdminLoginBody:
+      type: object
+      properties:
+        username:
+          type: string
+        password:
+          type: string
+      required:
+        - username
+        - password
+
+    AdminLoginResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+        token:
+          type: string
+      required:
+        - success
+        - token
+
+    UpdateArticleBody:
+      type: object
+      properties:
+        title:
+          type: string
+        description:
+          type: string
+        fullArticle:
+          type: string
+        category:
+          type: string
+        image:
+          type: string
+          nullable: true
+
+    TickerResponse:
+      type: object
+      properties:
+        text:
+          type: string
+        enabled:
+          type: boolean
+      required:
+        - text
+        - enabled
+
+    UpdateTickerBody:
+      type: object
+      properties:
+        text:
+          type: string
+        enabled:
+          type: boolean
+      required:
+        - text
+        - enabled
+
+    Ad:
+      type: object
+      properties:
+        id:
+          type: number
+        title:
+          type: string
+        imageUrl:
+          type: string
+          nullable: true
+        linkUrl:
+          type: string
+          nullable: true
+        placement:
+          type: string
+        enabled:
+          type: boolean
+        createdAt:
+          type: string
+      required:
+        - id
+        - title
+        - placement
+        - enabled
+        - createdAt
+
+    AdsListResponse:
+      type: object
+      properties:
+        ads:
+          type: array
+          items:
+            $ref: "#/components/schemas/Ad"
+      required:
+        - ads
+
+    CreateAdBody:
+      type: object
+      properties:
+        title:
+          type: string
+        imageUrl:
+          type: string
+          nullable: true
+        linkUrl:
+          type: string
+          nullable: true
+        placement:
+          type: string
+        enabled:
+          type: boolean
+      required:
+        - title
+        - placement
+        - enabled
